@@ -1,0 +1,59 @@
+mod utils;
+use std::net::{TcpListener, TcpStream};
+use std::io::{Read, Write};
+use std::fs;
+
+fn main(){
+    let listener = TcpListener::bind("127.0.0.1:8080").expect("Failed to bind to address");
+    println!("Running on port 8080!");
+    for stream in listener.incoming() {
+        match stream {
+            Ok(stream) => {
+                // Spawn a new thread or use async/await for concurrency
+                std::thread::spawn(|| handle_client(stream));
+            }
+            Err(e) => {
+                eprintln!("Error accepting connection: {}", e);
+            }
+        }
+    }
+}
+
+fn handle_client(mut stream: TcpStream) {
+    let mut buffer = [0; 512];
+    // Read data from the client
+    stream.read(&mut buffer).unwrap();
+    // Process the received data
+    
+    let received_data = String::from_utf8_lossy(&buffer).into_owned();
+    let path = utils::extract_path_method(& received_data.as_str()).expect("path Error");
+
+    let response: String = match path {
+        ("/","GET") => handle_root(&received_data).unwrap(),
+        _ => handle_not_found(&received_data).unwrap(),
+    };
+
+    stream.write(response.as_bytes()).unwrap();
+}
+
+// ROUTE /
+fn handle_root(_req: &String) -> Result<String,std::io::Error>{
+    let html_content = match fs::read_to_string("src/html.html") {
+        Ok(content) => content,
+        Err(e) => {
+            eprintln!("Error reading HTML file: {}", e);
+            return Err(e);
+        }
+    };
+    // Send a response back to the client
+    Ok(format!(
+        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
+        html_content.len(),
+        html_content
+    ))
+}
+
+// Route 404
+fn handle_not_found(_req: &String) -> Result<String,std::io::Error>{
+    Ok(String::from("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"))
+}
