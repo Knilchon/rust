@@ -24,20 +24,20 @@ fn handle_client(mut stream: TcpStream) {
     // Read data from the client
     stream.read(&mut buffer).unwrap();
     // Process the received data
-    
-    let received_data = String::from_utf8_lossy(&buffer).into_owned();
+
+    let mut received_data = String::from_utf8_lossy(&buffer).into_owned();
     let path = utils::extract_path_method(& received_data.as_str()).expect("path Error");
 
     let response: String = match path {
-        ("/","GET") => handle_root(&received_data).unwrap(),
-        _ => handle_not_found(&received_data).unwrap(),
+        ("/","GET") => handle_root(&mut received_data).unwrap(),
+        _ => handle_not_found(&mut received_data).unwrap(),
     };
 
     stream.write(response.as_bytes()).unwrap();
 }
 
 // ROUTE /
-fn handle_root(_req: &String) -> Result<String,std::io::Error>{
+fn handle_root(_req: &mut String) -> Result<String,std::io::Error>{
     let html_content = match fs::read_to_string("src/html.html") {
         Ok(content) => content,
         Err(e) => {
@@ -54,6 +54,6 @@ fn handle_root(_req: &String) -> Result<String,std::io::Error>{
 }
 
 // Route 404
-fn handle_not_found(_req: &String) -> Result<String,std::io::Error>{
+fn handle_not_found(_req: &mut String) -> Result<String,std::io::Error>{
     Ok(String::from("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"))
 }
