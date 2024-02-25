@@ -1,15 +1,34 @@
 mod utils;
-use std::net::{TcpListener, TcpStream};
+use std::net::{TcpListener, TcpStream, UdpSocket,SocketAddrV4,Ipv4Addr};
 use std::io::{Read, Write};
 use std::fs;
 
 fn main(){
-    let listener = TcpListener::bind("127.0.0.1:8080").expect("Failed to bind to address");
+    let listener = TcpListener::bind("0.0.0.0:8080").expect("Failed to bind to address");
+    // let local_addr = SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 8001);
+    // let udp_listeer = UdpSocket::bind(local_addr).unwrap();
+
+    // print!("bound!");
+    // loop {
+    //     let mut buf = [0; 1024];
+
+        
+    //     let (amt, src) = udp_listeer.recv_from(&mut buf).unwrap();
+    //     println!("Received {} bytes from {}", amt, src);    
+
+    //     let data = &buf[..amt];
+    //     println!("{:?}",String::from_utf8_lossy(data).trim());  
+
+    //     udp_listeer.send_to(data, src).unwrap();
+    // }
+    
+
     println!("Running on port 8080!");
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
                 // Spawn a new thread or use async/await for concurrency
+                println!("Connetion");
                 std::thread::spawn(|| handle_client(stream));
             }
             Err(e) => {
@@ -20,7 +39,7 @@ fn main(){
 }
 
 fn handle_client(mut stream: TcpStream) {
-    let mut buffer = [0; 512];
+    let mut buffer = [0; 1024];
     // Read data from the client
     stream.read(&mut buffer).unwrap();
     // Process the received data
