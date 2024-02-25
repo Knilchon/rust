@@ -46,10 +46,10 @@ fn handle_client(mut stream: TcpStream) {
 
     let mut received_data = String::from_utf8_lossy(&buffer).into_owned();
     let path = utils::extract_path_method(& received_data.as_str()).expect("path Error");
-
+    println!("{:?}", path);
     let response: String = match path {
-        ("/","GET") => handle_root(&mut received_data).unwrap(),
-        _ => handle_not_found(&mut received_data).unwrap(),
+        ("/","GET") => handle_root(&mut received_data).expect("handle root failed"),
+        _ => handle_not_found(&mut received_data).expect("handle not found failed"),
     };
 
     stream.write(response.as_bytes()).unwrap();
