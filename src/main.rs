@@ -4,35 +4,34 @@ use std::io::{Read, Write};
 use std::fs;
 
 fn main(){
-    let listener = TcpListener::bind("0.0.0.0:8080").expect("Failed to bind to address");
-    // let udp_listeer = UdpSocket::bind("0.0.0.0:8080").expect("Failed to bind to address");
+    // let listener = TcpListener::bind("0.0.0.0:8080").expect("Failed to bind to address");
+    let udp_listeer = UdpSocket::bind("0.0.0.0:8080").expect("Failed to bind to address");
 
-    // loop {
-    //     let mut buf = [0; 1024];
+    loop {
+        let mut buf = [0; 1024];
 
-    //     let (amt, src) = udp_listeer.recv_from(&mut buf).unwrap();
-    //     println!("Received {} bytes from {}", amt, src);    
+        let (amt, src) = udp_listeer.recv_from(&mut buf).unwrap();
+        println!("Received {} bytes from {}", amt, src);    
 
-    //     let data = &buf[..amt];
-    //     println!("{:?}",String::from_utf8_lossy(data).trim());  
+        let data = &buf[..amt];
+        println!("{:?}",String::from_utf8_lossy(data).trim());  
 
-    //     udp_listeer.send_to(data, src).unwrap();
-    // }
-    
-
-    println!("Running on port 8080!");
-    for stream in listener.incoming() {
-        match stream {
-            Ok(stream) => {
-                // Spawn a new thread or use async/await for concurrency
-                println!("Connetion");
-                std::thread::spawn(|| handle_client(stream));
-            }
-            Err(e) => {
-                eprintln!("Error accepting connection: {}", e);
-            }
-        }
+        udp_listeer.send_to(data, src).unwrap();
     }
+
+    // println!("Running on port 8080!");
+    // for stream in listener.incoming() {
+    //     match stream {
+    //         Ok(stream) => {
+    //             // Spawn a new thread or use async/await for concurrency
+    //             println!("Connetion");
+    //             std::thread::spawn(|| handle_client(stream));
+    //         }
+    //         Err(e) => {
+    //             eprintln!("Error accepting connection: {}", e);
+    //         }
+    //     }
+    // }
 }
 
 fn handle_client(mut stream: TcpStream) {
